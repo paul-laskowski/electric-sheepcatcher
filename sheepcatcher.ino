@@ -1,7 +1,38 @@
 #include <FastLED.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_PN532.h>
 
-#define LED_PIN     5
-#define LED_PIN2    6
+// If using the breakout with SPI, define the pins for SPI communication.
+#define PN532_SCK  (2)
+#define PN532_MOSI (3)
+#define PN532_SS   (4)
+#define PN532_MISO (5)
+
+// If using the breakout or shield with I2C, define just the pins connected
+// to the IRQ and reset lines.  Use the values below (2, 3) for the shield!
+#define PN532_IRQ   (2)
+#define PN532_RESET (3)  // Not connected by default on the NFC Shield
+
+// Uncomment just _one_ line below depending on how your breakout or shield
+// is connected to the Arduino:
+
+// Use this line for a breakout with a software SPI connection (recommended):
+Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
+
+// Use this line for a breakout with a hardware SPI connection.  Note that
+// the PN532 SCK, MOSI, and MISO pins need to be connected to the Arduino's
+// hardware SPI SCK, MOSI, and MISO pins.  On an Arduino Uno these are
+// SCK = 13, MOSI = 11, MISO = 12.  The SS line can be any digital IO pin.
+//Adafruit_PN532 nfc(PN532_SS);
+
+// Or use this line for a breakout or shield with an I2C connection:
+//Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
+
+// LED pins
+#define LED_PIN     10
+#define LED_PIN2    11
+
 #define NUM_STRIPS 2
 #define NUM_LEDS    50
 #define BRIGHTNESS  64
@@ -10,25 +41,6 @@
 CRGB leds[NUM_STRIPS][NUM_LEDS];
 
 #define UPDATES_PER_SECOND 100
-
-// This example shows several ways to set up and use 'palettes' of colors
-// with FastLED.
-//
-// These compact palettes provide an easy way to re-colorize your
-// animation on the fly, quickly, easily, and with low overhead.
-//
-// USING palettes is MUCH simpler in practice than in theory, so first just
-// run this sketch, and watch the pretty lights as you then read through
-// the code.  Although this sketch has eight (or more) different color schemes,
-// the entire sketch compiles down to about 6.5K on AVR.
-//
-// FastLED provides a few pre-configured color palettes, and makes it
-// extremely easy to make up your own color schemes with palettes.
-//
-// Some notes on the more abstract 'theory and practice' of
-// FastLED compact palettes are at the bottom of this file.
-
-
 
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
@@ -43,6 +55,29 @@ uint8_t TwinkleState[NUM_STRIPS][NUM_LEDS];
 
 void setup() {
     delay( 3000 ); // power-up safety delay
+    
+    Serial.begin(115200);
+    while (!Serial) delay(10); // for Leonardo/Micro/Zero
+    Serial.println("Hello!");
+
+    nfc.begin();
+
+    uint32_t versiondata = nfc.getFirmwareVersion();
+    if (! versiondata) {
+      Serial.print("Didn't find PN53x board");
+      while (1); // halt
+    }
+    // Got ok data, print it out!
+    Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX); 
+    Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC); 
+    Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
+  
+    // configure board to read RFID tags
+    nfc.setPassiveActivationRetries(0x00); // seems important so the NFC read doesn't block control
+    nfc.SAMConfig();
+  
+    Serial.println("Waiting for an ISO14443A Card ...");
+
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds[0], NUM_LEDS).setCorrection( TypicalLEDStrip );
     FastLED.addLeds<LED_TYPE, LED_PIN2, COLOR_ORDER>(leds[1], NUM_LEDS).setCorrection( TypicalLEDStrip );
     FastLED.setBrightness(  BRIGHTNESS );
@@ -54,15 +89,33 @@ void setup() {
     memset( TwinkleState, sizeof(TwinkleState), SteadyDim); // initialize all the pixels to SteadyDim.
 }
 
-CRGB TwinklePinkRef = CRGB(40,0,40);
+
+
+
+
 void loop()
 {
+    uint8_t success;
+    uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
+    uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
     uint8_t seconds = (millis() / 1000) % 223;
-  
-    ChangePalettePeriodically();
     
+    success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 0);
+  
+    if (success) {
+      glitterBug();
+      Serial.print("  UID Value: ");
+      nfc.PrintHex(uid, uidLength);
+      Serial.println("");
+    } else {
+      Twinkle(1, 208, 255);
+      Serial.println("No tag");
+    }
+    
+    ChangePalettePeriodically();
+  /*
     static uint8_t startIndex = 0;
-    startIndex = startIndex + 1; /* motion speed */
+    startIndex = startIndex + 1; // motion speed 
     
 
     if (seconds < 30) {
@@ -82,7 +135,7 @@ void loop()
     } else {
       Twinkle(1, 64, 128);
     }
-    
+    */
     
     FastLED.show();
     FastLED.delay(1000 / UPDATES_PER_SECOND);
