@@ -91,7 +91,7 @@ void setup() {
 
 
 
-
+byte glitter_tag[]={0x04, 0x1D, 0xDA, 0xD4, 0x70, 0x00, 0x00};
 
 void loop()
 {
@@ -102,14 +102,16 @@ void loop()
     
     success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 0);
   
-    if (success) {
+    if (!success) {
+      Twinkle(1, 208, 255);
+      Serial.println("No tag");
+    } else if (memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
       glitterBug();
       Serial.print("  UID Value: ");
       nfc.PrintHex(uid, uidLength);
       Serial.println("");
     } else {
-      Twinkle(1, 208, 255);
-      Serial.println("No tag");
+      FillLEDsWaves();
     }
     
     ChangePalettePeriodically();
