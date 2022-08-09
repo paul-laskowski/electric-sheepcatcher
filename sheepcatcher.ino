@@ -90,7 +90,7 @@ void setup() {
 }
 
 
-
+// Registered Dream Tags
 byte glitter_tag[]={0x04, 0x1D, 0xDA, 0xD4, 0x70, 0x00, 0x00};
 
 void loop()
@@ -104,14 +104,14 @@ void loop()
   
     if (!success) {
       Twinkle(1, 208, 255);
-      Serial.println("No tag");
+      // Serial.println("No tag");
     } else if (memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
       glitterBug();
-      Serial.print("  UID Value: ");
+      // Serial.print("  UID Value: ");
       nfc.PrintHex(uid, uidLength);
-      Serial.println("");
+      // Serial.println("");
     } else {
-      FillLEDsWaves();
+      Rotate();
     }
     
     ChangePalettePeriodically();
@@ -140,7 +140,7 @@ void loop()
     */
     
     FastLED.show();
-    FastLED.delay(1000 / UPDATES_PER_SECOND);
+    // FastLED.delay(1000 / UPDATES_PER_SECOND);
 }
 
 void FillLEDsFromPaletteColors( uint8_t colorIndex)
@@ -154,14 +154,13 @@ void FillLEDsFromPaletteColors( uint8_t colorIndex)
     }
 }
 
-void Rotate( uint8_t colorIndex)
+void Rotate()
 {
-    uint8_t brightness = 255;
+    uint8_t offset = millis()/200;
     
     for( int i = 0; i < NUM_LEDS; i++) {
-        leds[0][i] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
-        leds[1][NUM_LEDS - i - 1] = ColorFromPalette( currentPalette, 255 - colorIndex, brightness, currentBlending);
-        colorIndex += 3;
+        leds[0][i] = ColorFromPalette( currentPalette, offset, BRIGHTNESS, currentBlending);
+        leds[1][NUM_LEDS - i - 1] = ColorFromPalette( currentPalette, 255 - offset, BRIGHTNESS, currentBlending);
     }
 }
 
@@ -187,15 +186,13 @@ void FillLEDsWaves()
 {
     static uint16_t position1 = 0;
     static uint16_t position2 = 0;
-    uint8_t brightness = 124;
     
     position1 += sin8(millis() / 200);
     position2 += cos8(millis() / 200);
     
-    
     for( uint8_t i = 0; i < NUM_LEDS; i++) {
-        leds[1][i] = ColorFromPalette( currentPalette, uint8_t(position1 /256) + 3 * i, brightness, currentBlending);
-        leds[0][i] = ColorFromPalette( currentPalette, uint8_t(position2 /256) + 3 * i, brightness, currentBlending);
+        leds[1][i] = ColorFromPalette( currentPalette, uint8_t(position1 /256) + 3 * i, BRIGHTNESS, currentBlending);
+        leds[0][i] = ColorFromPalette( currentPalette, uint8_t(position2 /256) + 3 * i, BRIGHTNESS, currentBlending);
     }
 }
 
@@ -306,12 +303,6 @@ void Twinkle( fract8 chanceOfTwinkle, uint8_t hue, uint8_t sat ) {
   CRGB PEAK_COLOR = CHSV(hue, sat, 128);
   CRGB DELTA_COLOR_UP = CHSV(hue, sat, 4);
   CRGB DELTA_COLOR_DOWN = CRGB(1,1, 1);
-
-  Serial.print('Twinkle State:'); 
-  for( uint16_t i = 0; i < NUM_LEDS; i++) {
-    Serial.print(TwinkleState[0][i]);
-  }
-  Serial.println(' ');
   
   // Strip 1
   for( uint16_t i = 0; i < NUM_LEDS; i++) {
@@ -394,7 +385,7 @@ void Twinkle( fract8 chanceOfTwinkle, CRGBPalette16 palette ) {
   BASE_COLOR = ColorFromPalette( currentPalette, offset, 64, currentBlending);
   PEAK_COLOR = ColorFromPalette( currentPalette, offset, 128, currentBlending);
   DELTA_COLOR_UP = ColorFromPalette( currentPalette, offset, 3, currentBlending);
-  DELTA_COLOR_DOWN = ColorFromPalette( currentPalette, offset, 1, currentBlending);
+  DELTA_COLOR_DOWN = CRGB(1,1,1);
   
   // Strip 1
   for( uint16_t i = 0; i < NUM_LEDS; i++) {
