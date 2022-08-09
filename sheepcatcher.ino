@@ -49,8 +49,8 @@ extern CRGBPalette16 myRedWhiteBluePalette;
 extern const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM;
 
 // Twinkle
-enum { SteadyDim, GettingBrighter, GettingDimmerAgain };
-uint8_t TwinkleState[NUM_STRIPS][NUM_LEDS];
+enum twink { SteadyDim, GettingBrighter, GettingDimmerAgain };
+twink TwinkleState[NUM_STRIPS][NUM_LEDS];
 
 
 void setup() {
@@ -297,21 +297,7 @@ void addGlitter( fract8 chanceOfGlitter) {
 }
 
 
-// Base background color
-// #define BASE_COLOR       CRGB(32,0,32)
 
-// Peak color to twinkle up to
-// #define PEAK_COLOR       CRGB(64,0,64)
-
-
-// Currently set to brighten up a bit faster than it dims down, 
-// but this can be adjusted.
-
-// Amount to increment the color by each loop as it gets brighter:
-//#define DELTA_COLOR_UP   CRGB(4,0,4)
-
-// Amount to decrement the color by each loop as it gets dimmer:
-//#define DELTA_COLOR_DOWN CRGB(1,0,1)
 
 
 
@@ -319,7 +305,13 @@ void Twinkle( fract8 chanceOfTwinkle, uint8_t hue, uint8_t sat ) {
   CRGB BASE_COLOR = CHSV(hue, sat, 64);
   CRGB PEAK_COLOR = CHSV(hue, sat, 128);
   CRGB DELTA_COLOR_UP = CHSV(hue, sat, 4);
-  CRGB DELTA_COLOR_DOWN = CHSV(hue,sat, 1);
+  CRGB DELTA_COLOR_DOWN = CRGB(1,1, 1);
+
+  Serial.print('Twinkle State:'); 
+  for( uint16_t i = 0; i < NUM_LEDS; i++) {
+    Serial.print(TwinkleState[0][i]);
+  }
+  Serial.println(' ');
   
   // Strip 1
   for( uint16_t i = 0; i < NUM_LEDS; i++) {
