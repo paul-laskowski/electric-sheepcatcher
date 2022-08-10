@@ -40,7 +40,6 @@ Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 #define COLOR_ORDER RGB
 CRGB leds[NUM_STRIPS][NUM_LEDS];
 
-#define UPDATES_PER_SECOND 100
 
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
@@ -93,6 +92,9 @@ void setup() {
 // Registered Dream Tags
 byte glitter_tag[]={0x04, 0x1D, 0xDA, 0xD4, 0x70, 0x00, 0x00};
 
+const unsigned long READ_TIMEOUT = 1000;
+int reads_since_success = 0;
+
 void loop()
 {
     uint8_t success;
@@ -100,17 +102,31 @@ void loop()
     uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
     uint8_t seconds = (millis() / 1000) % 223;
     
+/*
+    Serial.print("millis(): ");
+    Serial.println(millis());
+    Serial.print("last_read_time: ");
+    Serial.println(last_read_time);
+    Serial.print("millis() - last_read_time: ");
+    Serial.println(millis() - last_read_time);
+    */   
+
     success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 0);
+    reads_since_success++;
+    if (success){
+      reads_since_success=0;
+    }
   
-    if (!success) {
+    if (reads_since_success>2) {
       Twinkle(1, 208, 255);
-      // Serial.println("No tag");
+      //Serial.println("No tag");
     } else if (memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
       glitterBug();
-      // Serial.print("  UID Value: ");
-      nfc.PrintHex(uid, uidLength);
+      //Serial.println("  Glitter Tag ");
+      //nfc.PrintHex(uid, uidLength);
       // Serial.println("");
     } else {
+      //Serial.println("  Unknown Tag ");
       Rotate();
     }
     
@@ -140,7 +156,7 @@ void loop()
     */
     
     FastLED.show();
-    // FastLED.delay(1000 / UPDATES_PER_SECOND);
+    //FastLED.delay(10);
 }
 
 void FillLEDsFromPaletteColors( uint8_t colorIndex)
