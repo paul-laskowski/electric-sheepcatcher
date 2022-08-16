@@ -91,6 +91,8 @@ void setup() {
 
 // Registered Dream Tags
 byte glitter_tag[]={0x04, 0x1D, 0xDA, 0xD4, 0x70, 0x00, 0x00};
+byte test_tag[]={0x1E, 0x1F, 0x3D, 0x2A};
+byte null_tag[]={0x00, 0x00, 0x00, 0x00};
 
 const unsigned long READ_TIMEOUT = 1000;
 int reads_since_success = 0;
@@ -119,18 +121,36 @@ void loop()
   
     if (reads_since_success>2) {
       Twinkle(1, 208, 255);
-      //Serial.println("No tag");
+      Serial.println("No tag");
     } else if (memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
       glitterBug();
-      //Serial.println("  Glitter Tag ");
-      //nfc.PrintHex(uid, uidLength);
+      Serial.println("  Glitter Tag ");
+      nfc.PrintHex(uid, uidLength);
+      Serial.println("");
+    } else if (memcmp(uid, test_tag, sizeof(test_tag)) == 0){
+      Flight();
+//      Pulse();
+//      Lust();
+//      FillLEDsWaves();
+//      Rainbow();
+      Serial.println("  Lust Tag ");
+      Serial.println(millis());
+//      nfc.PrintHex(uid, uidLength);
+//      Serial.println("");
+      // Rotate();
+    } else if (memcmp(uid, null_tag, sizeof(null_tag)) == 0){
+      // Serial.println("  Null Tag ");
+      // nfc.PrintHex(uid, uidLength);
       // Serial.println("");
     } else {
-      //Serial.println("  Unknown Tag ");
-      Rotate();
+      Serial.println("  Glitter Tag ");
+      nfc.PrintHex(uid, uidLength);
+      Serial.println("");
+      Serial.println("  Unknown Tag ");
+      //Rotate();
     }
     
-    ChangePalettePeriodically();
+    // ChangePalettePeriodically();
   /*
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; // motion speed 
@@ -157,6 +177,90 @@ void loop()
     
     FastLED.show();
     //FastLED.delay(10);
+}
+
+uint8_t Step( uint8_t phase, uint8_t n)
+{
+  uint8_t amplitude = (n * phase / 255) * 255;
+  return amplitude;
+}
+
+
+void Flight()
+{
+    uint8_t offset_1 = millis()/7;
+    uint8_t intensity = 255;
+//    i / NUM_LEDS 
+    for( int i = 0; i < NUM_LEDS; i++) {
+      leds[0][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset_1, 3), intensity);
+      leds[1][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset_1, 3), intensity);
+    }
+    
+
+}
+
+
+
+
+void Lust()
+{
+    uint8_t main_clock = millis() / 100;
+
+    
+    uint8_t offset_1;
+    uint8_t offset_2;
+    uint8_t intensity = 96;
+    if (main_clock < 240) {
+      
+      if (main_clock < 32) {
+        offset_1 = millis() / 7;
+        offset_2 = millis() / 7 - 30;
+      } else if (main_clock < 64) {
+        intensity = 64;
+        offset_1 = millis() / 6;
+        offset_2 = millis() / 6 - 15;
+      } else if (main_clock < 128) {
+        intensity = 96;
+        offset_1 = millis() / 5;
+        offset_2 = millis() / 5 - 15;
+      } else if (main_clock < 160) {
+        intensity = 128;
+        offset_1 = millis() / 4;
+        offset_2 = millis() / 4 - 10;
+      } else if (main_clock < 228) {
+        intensity = 160;
+        offset_1 = millis() / 3;
+        offset_2 = millis() / 3 - 2 ;
+      } else {
+        intensity = 192;
+        offset_1 = millis() / 2.5;
+        offset_2 = millis() / 2.5;
+      }
+      for( int i = 0; i < NUM_LEDS; i++) {
+        leds[0][i] = CHSV(245, 255, intensity / 2 * i / NUM_LEDS  + intensity / 2 * triwave8(offset_1) / 255);
+        leds[1][i] = CHSV(245, 255, intensity / 2 * i / NUM_LEDS  + intensity / 2 * triwave8(offset_2) / 255);
+      }
+    } else {
+      for( int i = 0; i < NUM_LEDS; i++) {
+        leds[0][i] = CHSV(245, 255, 255);
+        leds[1][i] = CHSV(240, 255, 255);
+      }
+      glitterBug();
+    }
+    
+    
+
+}
+
+void Rainbow()
+{
+    uint8_t hue_offset = millis() / 20;
+    
+    
+    for( int i = 0; i < NUM_LEDS; i++) {
+      leds[0][i] = CHSV(i * 255 / NUM_LEDS - hue_offset * 255, 255, 255);
+      leds[1][i] = CHSV(i * 255 / NUM_LEDS - hue_offset * 255, 255, 255);
+    }
 }
 
 void FillLEDsFromPaletteColors( uint8_t colorIndex)
@@ -297,7 +401,7 @@ void glitterBug() {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[0][i].fadeLightBy( 16 );
     leds[1][i].fadeLightBy( 16 );
-    addGlitter(5);
+    addGlitter(10);
   }
 }
 
