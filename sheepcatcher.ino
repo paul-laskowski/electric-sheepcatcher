@@ -128,7 +128,9 @@ void loop()
       nfc.PrintHex(uid, uidLength);
       Serial.println("");
     } else if (memcmp(uid, test_tag, sizeof(test_tag)) == 0){
-      Flight();
+//      Firework();
+      Space();
+//      Flight();
 //      Pulse();
 //      Lust();
 //      FillLEDsWaves();
@@ -179,21 +181,48 @@ void loop()
     //FastLED.delay(10);
 }
 
+void Firework()
+{
+    uint8_t hue = Step(millis()/10, 12);
+    uint8_t radius = millis()/3;
+    
+    uint8_t intensity = 128;
+//    i / NUM_LEDS 
+    for( int i = 0; i < NUM_LEDS; i++) {
+      leds[0][i] = CHSV(0, 0, 0);
+      leds[1][i] = CHSV(hue, 255, 255);
+    }
+    
+
+}
+
+void Space()
+{
+    uint8_t offset_1 = millis()/6;
+
+    for( int i = 0; i < NUM_LEDS; i++) {
+      leds[0][i] = CHSV(0, 0, Step(255 * 2 * i / NUM_LEDS + offset_1, 1));
+      leds[1][i] = CHSV(0, 0, Step(255 * 2 * i / NUM_LEDS + offset_1, 1));
+    }
+    
+
+}
+
 uint8_t Step( uint8_t phase, uint8_t n)
 {
-  uint8_t amplitude = (n * phase / 255) * 255;
+  uint8_t amplitude = (floor((n + 1) * phase / 256))  * 255 / n;
   return amplitude;
 }
 
 
 void Flight()
 {
-    uint8_t offset_1 = millis()/7;
+    uint8_t offset = millis()/7;
     uint8_t intensity = 255;
-//    i / NUM_LEDS 
+    
     for( int i = 0; i < NUM_LEDS; i++) {
-      leds[0][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset_1, 3), intensity);
-      leds[1][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset_1, 3), intensity);
+      leds[0][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset, 2), intensity);
+      leds[1][i] = CHSV(180, Step(255 * i / NUM_LEDS + offset, 2), intensity);
     }
     
 
