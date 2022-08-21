@@ -59,6 +59,12 @@ void setup() {
     while (!Serial) delay(10); // for Leonardo/Micro/Zero
     Serial.println("Hello!");
 
+    for( int i = 0; i < 256; i++) {
+      Serial.print(i);
+      Serial.print(", ");
+      Serial.println(Step(i, 12));
+    }
+    
     nfc.begin();
 
     uint32_t versiondata = nfc.getFirmwareVersion();
@@ -128,15 +134,15 @@ void loop()
       nfc.PrintHex(uid, uidLength);
       Serial.println("");
     } else if (memcmp(uid, test_tag, sizeof(test_tag)) == 0){
-//      Firework();
-      Space();
+      Firework();
+//      Space();
 //      Flight();
 //      Pulse();
 //      Lust();
 //      FillLEDsWaves();
 //      Rainbow();
-      Serial.println("  Lust Tag ");
-      Serial.println(millis());
+//      Serial.println("  Lust Tag ");
+//      Serial.println(millis());
 //      nfc.PrintHex(uid, uidLength);
 //      Serial.println("");
       // Rotate();
@@ -183,15 +189,45 @@ void loop()
 
 void Firework()
 {
-    uint8_t hue = Step(millis()/10, 12);
-    uint8_t radius = millis()/3;
-    
-    uint8_t intensity = 128;
-//    i / NUM_LEDS 
+
+  
+  uint8_t phase = millis() / 8;
+  uint8_t hue1 = Step(millis() / (8 * 12) , 11);
+  uint8_t hue2 = hue1 + 255 /3;
+  
+  
+
+  
+  uint8_t index1 = phase * NUM_LEDS / 255;
+  uint8_t index2 = phase * NUM_LEDS / 255 / 2;
+
+  if ( phase < 32 ) {
     for( int i = 0; i < NUM_LEDS; i++) {
       leds[0][i] = CHSV(0, 0, 0);
-      leds[1][i] = CHSV(hue, 255, 255);
+      leds[1][i] = CHSV(0, 0, 0);
     }
+  } else {
+    
+  
+  
+    for( int i = 0; i < NUM_LEDS; i++) {
+      if ( i == index1 ||  i == index1 - 1 || i == index1 - 2 ) {
+        leds[0][NUM_LEDS - i] = CHSV(hue1, 255, 255);
+        leds[1][NUM_LEDS - i] = CHSV(hue1, 255, 255);
+      } else if ( i == index2) {
+        leds[0][NUM_LEDS - i] = CHSV(hue2, 255, 255);
+        leds[1][NUM_LEDS - i] = CHSV(hue2, 255, 255);
+      } else{
+      
+        leds[0][NUM_LEDS - i] = CHSV(0, 0, 0);
+        leds[1][NUM_LEDS - i] = CHSV(0, 0, 0);
+      }
+    }
+  }
+
+  if ( phase > 220 ) {
+    glitterBug();
+  }
     
 
 }
