@@ -395,9 +395,6 @@ void Flight()
 
 }
 
-
-
-
 void Lust()
 {
     uint8_t main_clock = millis() / 100;
