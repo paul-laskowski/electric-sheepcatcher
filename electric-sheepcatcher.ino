@@ -248,6 +248,7 @@ boolean runMatchedPattern(uint8_t uid[]) {
 uint8_t success;
 uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
 uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
+bool last_success = false;
 
 void loop()
 {
@@ -265,12 +266,23 @@ void loop()
     */   
 
     success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 0);
+    Serial.println(reads_since_success);
+    if (reads_since_success > 1 && success){
+      Serial.println("Initialize");
+      for( int i = 0; i < NUM_LEDS; i++) {
+        leds[0][NUM_LEDS - i] = CHSV(0, 0, 64);
+        leds[1][NUM_LEDS - i] = CHSV(0, 0, 64);
+      }
+    }
+    last_success = success;
     reads_since_success++;
     if (success){
       reads_since_success=0;
     }
+    
   
     if (reads_since_success>20) {
+
       Serial.println("No tag");
 //      Twinkle(1, myRedWhiteBluePalette_p);
 //      Twinkle(1, 90, 255); //green??
@@ -291,6 +303,8 @@ void loop()
 //      Pulse();
 //      FillLEDsWaves();
     } else if (runMatchedPattern(uid)) {
+      
+      last_success = success;
       Serial.println("Matched tag");
     } else {
       nfc.PrintHex(uid, uidLength);
@@ -298,7 +312,6 @@ void loop()
       Serial.println("  Unknown Tag ");
       glitterBug();
     }
-
     
 //     ChangePalettePeriodically();
   /*
