@@ -225,7 +225,7 @@ boolean runMatchedPattern(uint8_t uid[]) {
  }
  if (equalTags(uid, kevin_tag)) {
   Serial.println("Kevin tag");
-  Lust();
+  Firework();
   return true;
  }
  if (equalTags(uid, zach_tag)) {
