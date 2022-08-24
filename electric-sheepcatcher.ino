@@ -14,6 +14,7 @@
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
+
 // Uncomment just _one_ line below depending on how your breakout or shield
 // is connected to the Arduino:
 
