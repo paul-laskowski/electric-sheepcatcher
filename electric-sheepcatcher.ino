@@ -14,7 +14,6 @@
 #define PN532_IRQ   (2)
 #define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
-
 // Uncomment just _one_ line below depending on how your breakout or shield
 // is connected to the Arduino:
 
@@ -60,12 +59,6 @@ void setup() {
     while (!Serial) delay(10); // for Leonardo/Micro/Zero
     Serial.println("Hello!");
 
-    for( int i = 0; i < 256; i++) {
-      Serial.print(i);
-      Serial.print(", ");
-      Serial.println(Step(i, 12));
-    }
-    
     nfc.begin();
 
     uint32_t versiondata = nfc.getFirmwareVersion();
@@ -101,6 +94,15 @@ byte glitter_tag[]={0x04, 0x1D, 0xDA, 0xD4, 0x70, 0x00, 0x00};
 byte test_tag[]={0x1E, 0x1F, 0x3D, 0x2A};
 byte null_tag[]={0x00, 0x00, 0x00, 0x00};
 
+// tags for jars of dreams
+byte wet_dreams[]={0x04,0x9E,0xFF,0xD4,0x70,0x00,0x00};
+byte american_dreams[]={0x04,0x81,0xF7,0xD4,0x70,0x00,0x00};
+byte equality[]={0x04,0x49,0xF6,0xD4,0x70,0x00,0x00};
+byte clouds[]={0x04,0xBE,0x00,0xD5,0x70,0x00,0x00};
+byte no_pants[]={0x04,0xC2,0x07,0xD5,0x70,0x00,0x00};
+byte gotta_pee[]={0x04,0xCA,0x08,0xD5,0x70,0x00,0x00};
+
+// tags for people camping with us
 byte thor_tag[]={0x04,0x88,0xA0,0xD4,0x70,0x00,0x00};
 byte desi_tag[]={0x04,0xF7,0xA0,0xD4,0x70,0x00,0x00};
 byte hugs_tag[]={0x04,0x6A,0x8E,0xD4,0x70,0x00,0x00};
@@ -115,7 +117,7 @@ byte kevin_tag[]={0x04,0x3E,0x85,0xD4,0x70,0x00,0x00};
 byte zach_tag[]={0x04,0x69,0x61,0xD4,0x70,0x00,0x00};
 byte feli_tag[]={0x04,0x4A,0xAA,0xD4,0x70,0x00,0x00};
 
-//not camping with us 
+//tags for people not camping with us 
 byte jeremy_tag[]={0x04,0xC8,0x8E,0xD4,0x70,0x00,0x00};
 byte enizzy_tag[]={0x04,0x28,0x73,0xD4,0x70,0x00,0x00};
 byte jess_tag[]={0x04,0xB0,0x61,0xD4,0x70,0x00,0x00};
@@ -137,14 +139,48 @@ boolean runMatchedPattern(uint8_t uid[]) {
   Space();
   return true;
  }
+ 
+ //tag assignments for jars of dreams
+ if (equalTags(uid, wet_dreams)) {
+  Serial.println("jar of wet dreams tag");
+  Lust();
+  return true;
+ }
+ if (equalTags(uid, american_dreams)) {
+  Serial.println("jar of american dreams tag");
+  Lust();
+  return true;
+ }
+ if (equalTags(uid, equality)) {
+  Serial.println("jar of equality tag");
+  Lust();
+  return true;
+ }
+ if (equalTags(uid, clouds)) {
+  Serial.println("jar of clouds tag");
+  Lust();
+  return true;
+ }
+ if (equalTags(uid, no_pants)) {
+  Serial.println("jar of no pants tag");
+  Lust();
+  return true;
+ }
+ if (equalTags(uid, gotta_pee)) {
+  Serial.println("jar of gotta pee tag");
+  Lust();
+  return true;
+ }
+
+ //tag assignments for people camping with us in 2022
  if (equalTags(uid, thor_tag)) {
   Serial.println("Thor tag");
-  Lust();
+  Twinkle(1, 160, 128); //blue??
   return true;
  }
  if (equalTags(uid, desi_tag)) {
   Serial.println("Desi tag");
-  Lust();
+  Twinkle(1, 170, 70); //purple?
   return true;
  }
  if (equalTags(uid, hugs_tag)) {
@@ -159,12 +195,12 @@ boolean runMatchedPattern(uint8_t uid[]) {
  }
  if (equalTags(uid, rose_tag)) {
   Serial.println("Rose tag");
-  Lust();
+  Twinkle(1, 0, 128); //red
   return true;
  }
  if (equalTags(uid, hari_tag)) {
   Serial.println("Hari tag");
-  Lust();
+  Twinkle(1, 90, 255); //green??
   return true;
  }
  if (equalTags(uid, krishna_tag)) {
@@ -174,7 +210,7 @@ boolean runMatchedPattern(uint8_t uid[]) {
  }
  if (equalTags(uid, amanda_tag)) {
   Serial.println("Amanda tag");
-  Lust();
+  Twinkle(1, 0, 128); //red
   return true;
  }
  if (equalTags(uid, nat_tag)) {
@@ -194,14 +230,18 @@ boolean runMatchedPattern(uint8_t uid[]) {
  }
  if (equalTags(uid, zach_tag)) {
   Serial.println("Zach tag");
-  Lust();
+  Twinkle(1, 170, 70); //purple?
   return true;
  }
  if (equalTags(uid, feli_tag)) {
   Serial.println("Feli tag");
-  Lust();
+  Twinkle(1, 0, 128); //red twinkle
   return true;
  }
+
+//
+ 
+ 
  return false;
 }
 
@@ -232,74 +272,35 @@ void loop()
   
     if (reads_since_success>20) {
       Serial.println("No tag");
-<<<<<<< HEAD:sheepcatcher.ino
-    } else if (memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
-      glitterBug();
-      Serial.println("  Glitter Tag ");
-      nfc.PrintHex(uid, uidLength);
-      Serial.println("");
-    } else if (memcmp(uid, test_tag, sizeof(test_tag)) == 0){
-      Firework();
-//      Space();
-//      Flight();
-//      Pulse();
+//      Twinkle(1, myRedWhiteBluePalette_p);
+//      Twinkle(1, 90, 255); //green??
+//      Twinkle(1, 160, 128); //blue??
+//      Twinkle(1, 170, 70); //purple?
+//      Twinkle(1, 0, 128); //red
+//      Twinkle(1, 64, 128); //yellow
+//      Twinkle(1, 208, 255); //
+//      glitterBug();
 //      Lust();
+//      Firework();
+//      Space();
+//      Step();
+//      Flight();
+      Rainbow();
+//      FillLEDsFromPaletteColors();
+//      Rotate();
+//      Pulse();
 //      FillLEDsWaves();
-//      Rainbow();
-//      Serial.println("  Lust Tag ");
-//      Serial.println(millis());
-//      nfc.PrintHex(uid, uidLength);
-//      Serial.println("");
-      // Rotate();
-    } else if (memcmp(uid, null_tag, sizeof(null_tag)) == 0){
-      // Serial.println("  Null Tag ");
-      // nfc.PrintHex(uid, uidLength);
-      // Serial.println("");
-=======
-      Twinkle(1, 208, 255);
     } else if (runMatchedPattern(uid)) {
       Serial.println("Matched tag");
->>>>>>> dev-2022:electric-sheepcatcher.ino
     } else {
       nfc.PrintHex(uid, uidLength);
       Serial.println("");
       Serial.println("  Unknown Tag ");
       glitterBug();
     }
+
     
-//    memcmp(uid, glitter_tag, sizeof(glitter_tag)) == 0){
-//      glitterBug();
-//      Serial.println("  Glitter Tag ");
-//      nfc.PrintHex(uid, uidLength);
-//      Serial.println("");
-//    } else if (memcmp(uid, thor_tag, sizeof(thor_tag)) == 0){
-//      Lust();
-//      Serial.println("  Thor Tag ");
-//    } else if (memcmp(uid, test_tag, sizeof(test_tag)) == 0){
-////      Firework();
-//      Space();
-////      Flight();
-////      Pulse();
-////      Lust();
-////      FillLEDsWaves();
-////      Rainbow();
-//      Serial.println("  Lust Tag ");
-//      Serial.println(millis());
-////      nfc.PrintHex(uid, uidLength);
-////      Serial.println("");
-//      // Rotate();
-//    } else if (memcmp(uid, null_tag, sizeof(null_tag)) == 0){
-//      // Serial.println("  Null Tag ");
-//      // nfc.PrintHex(uid, uidLength);
-//      // Serial.println("");
-//    } else {
-//      nfc.PrintHex(uid, uidLength);
-//      Serial.println("");
-//      Serial.println("  Unknown Tag ");
-//      glitterBug();
-//    }
-    
-    // ChangePalettePeriodically();
+//     ChangePalettePeriodically();
   /*
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; // motion speed 
@@ -330,15 +331,9 @@ void loop()
 
 void Firework()
 {
-
-  
   uint8_t phase = millis() / 8;
   uint8_t hue1 = Step(millis() / (8 * 12) , 11);
   uint8_t hue2 = hue1 + 255 /3;
-  
-  
-
-  
   uint8_t index1 = phase * NUM_LEDS / 255;
   uint8_t index2 = phase * NUM_LEDS / 255 / 2;
 
@@ -348,9 +343,6 @@ void Firework()
       leds[1][i] = CHSV(0, 0, 0);
     }
   } else {
-    
-  
-  
     for( int i = 0; i < NUM_LEDS; i++) {
       if ( i == index1 ||  i == index1 - 1 || i == index1 - 2 ) {
         leds[0][NUM_LEDS - i] = CHSV(hue1, 255, 255);
@@ -359,7 +351,7 @@ void Firework()
         leds[0][NUM_LEDS - i] = CHSV(hue2, 255, 255);
         leds[1][NUM_LEDS - i] = CHSV(hue2, 255, 255);
       } else{
-      
+
         leds[0][NUM_LEDS - i] = CHSV(0, 0, 0);
         leds[1][NUM_LEDS - i] = CHSV(0, 0, 0);
       }
@@ -369,8 +361,6 @@ void Firework()
   if ( phase > 220 ) {
     glitterBug();
   }
-    
-
 }
 
 void Space()
@@ -469,8 +459,10 @@ void Rainbow()
     }
 }
 
-void FillLEDsFromPaletteColors( uint8_t colorIndex)
+//void FillLEDsFromPaletteColors( uint8_t colorIndex)
+void FillLEDsFromPaletteColors()
 {
+    uint8_t colorIndex = millis()/100;
     uint8_t brightness = 255;
     
     for( int i = 0; i < NUM_LEDS; i++) {
